@@ -20,59 +20,55 @@ import java.util.Date;
 import java.util.List;
 import edu.upc.dsa.util.Fachada;  // Importa la fachada
 
-/**
- * Main class.
- *
- */
 public class Main {
+    // Base URI the Grizzly HTTP server will listen on
+    public static final String BASE_URI = "http://localhost:8080/MiWeb/";
 
+    /**
+     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
+     * @return Grizzly HTTP server.
+     */
+    public static HttpServer startServer() {
+        // create a resource config that scans for JAX-RS resources and providers
+        // in edu.upc.dsa package
+        final ResourceConfig rc = new ResourceConfig().packages("edu.upc.dsa.services");
+
+        rc.register(io.swagger.jaxrs.listing.ApiListingResource.class);
+        rc.register(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+
+        BeanConfig beanConfig = new BeanConfig();
+
+        beanConfig.setHost("localhost:8080");
+        beanConfig.setBasePath("/MiWeb");
+        beanConfig.setContact("support@example.com");
+        beanConfig.setDescription("REST API for Tracks Manager");
+        beanConfig.setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html");
+        beanConfig.setResourcePackage("edu.upc.dsa.services");
+        beanConfig.setTermsOfServiceUrl("http://www.example.com/resources/eula");
+        beanConfig.setTitle("REST API");
+        beanConfig.setVersion("1.0.0");
+        beanConfig.setScan(true);
+
+        // create and start a new instance of grizzly http server
+        // exposing the Jersey application at BASE_URI
+        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+    }
 
     /*** Main method.
      * @param args
      * @throws IOException */
     public static void main(String[] args) throws IOException {
+        final HttpServer server = startServer();
 
-        // Obtener la instancia única de la fachada
-        Fachada fachada = Fachada.getInstance();
+        StaticHttpHandler staticHttpHandler = new StaticHttpHandler("./public/");
+        server.getServerConfiguration().addHttpHandler(staticHttpHandler, "/");
 
-        // Crear y agregar usuarios a la fachada
-        fachada.registrarUsuario(new Usuario(1, "Juan", "Pérez", "juan.perez@example.com", new Date(90, 4, 23)));
-        fachada.registrarUsuario(new Usuario(2, "Ana", "Gómez", "ana.gomez@example.com", new Date(85, 6, 15)));
-        fachada.registrarUsuario(new Usuario(3, "Luis", "Martínez", "luis.martinez@example.com", new Date(92, 10, 2)));
 
-        // Ejemplo de creación de puntos de interés
-        fachada.registrarPuntoDeInteres(new PuntoDeInteres("Puerta Norte", 10.5, 20.3, PuntoDeInteres.ElementType.DOOR));
-        fachada.registrarPuntoDeInteres(new PuntoDeInteres("Arbol Viejo", 15.2, 30.1, PuntoDeInteres.ElementType.TREE));
+        System.out.println(String.format("Jersey app started with WADL available at "
+                + "%sapplication.wadl\nHit enter to stop it...", BASE_URI));
 
-        // Obtener la lista de usuarios ordenados alfabéticamente
-        List<Usuario> usuariosOrdenados = fachada.listarUsuariosAlfabeticamente(fachada.getUsuarios());
-
-        // Consultar usuario por identificador
-        try {
-            Usuario usuario = fachada.consultarUsuarioPorId(fachada.getUsuarios(), 2);
-        } catch (UsuarioNoEncontradoException e) {
-            System.err.println(e.getMessage());
-        }
-
-        // Registrar paso por un punto de interes
-        try {
-            fachada.registrarPasoPorPuntoDeInteres(1, 10.5, 20.3); // Ejemplo exitoso
-            fachada.registrarPasoPorPuntoDeInteres(2, 15.2, 30.1); // Usuario no existe
-        } catch (UsuarioNoExisteException | PuntoDeInteresNoExisteException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-
-        // Consultar los puntos visitados por el usuario con ID 1 y obtener el resultado como lista
-        List<String> resultado = fachada.consultarPuntosVisitados(1);
-        resultado.forEach(System.out::println);
-
-        // Consultar los usuarios que han pasado por el punto de interés en las coordenadas dadas
-        List<String> usuariosPorPunto = fachada.consultarUsuariosPorPuntoDeInteres(10.5, 20.3);
-        usuariosPorPunto.forEach(System.out::println);
-
-        // Consultar puntos de interés de tipo "TREE"
-        List<String> puntosDeTipo = fachada.consultarPuntosPorTipo(PuntoDeInteres.ElementType.TREE);
-        puntosDeTipo.forEach(System.out::println);
+        System.in.read();
+        server.stop();
     }
 }
 

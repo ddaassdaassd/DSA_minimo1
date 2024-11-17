@@ -6,15 +6,23 @@ clase usuario: tiene identificador, nombre apellido, correo electronco, fecha de
 
 clase PuntoDeInteres: tiene nombre, coordenadas horizontal i vertical i un tipo de la lsta, door, wall, bridge,...
 
-main: se crean una lista de usuarios i puntos de interés, se crean i se añaden algunos puntos de interes i usuarios a estas listas, cuando ejecutas e programa hace:
-- te da una lista "usuariosOrdenados" con los usuarios ordenados alfabéticamente
+test: prueba todas las funciones:
+- registrar usuario
+- listar usuario por orden alfabetico
+- consltar informacon de un usuario por su id
+- añadir puntos de interés en el mapa
+- registrar que un usuario para por un punto de interés
+- consultas puntos de interés por los que pasa un usuario
+- listar usuarios que han pasado por un punt de interés
+- consultar puntos de interés de un tipo
 
-- te da como "usuario" al usuario con id=2
+el servicio api rest hace las mismas funciones
 
-- registra que algunos usuarios han pasado por un punto
-
-- consulta los puntos visitados por el usuario id=1 te da una lista "resultado"
-
-- consulta los usuarios que han visitado el punto en 10,5 20,3 te da una lista "usuariosPorPunto"
-
-- consulta los puntos de interes que son tipo tree, te da una lista "puntosDeTipo"
+- registrar usuario------------------------------------------ POST /usuarios
+- listar usuario por orden alfabetico------------------------ GET /usuarios
+- consltar informacon de un usuario por su id---------------- GET /usuarios/{id}
+- añadir puntos de interés en el mapa------------------------ POST /puntosinteres
+- registrar que un usuario para por un punto de interés------ POST /registro
+- consultas puntos de interés por los que pasa un usuario---- GET /puntosvisitados/{id}
+- listar usuarios que han pasado por un punt de interés------ GET /usuarios/punto
+- consultar puntos de interés de un tipo--------------------- GET /puntosinteres/tipo

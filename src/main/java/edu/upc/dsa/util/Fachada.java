@@ -81,6 +81,11 @@ public class Fachada implements IFachada {
     }
 
     @Override
+    public List<PuntoDeInteres> getPuntosDeInteres() {
+        return this.puntosDeInteres;
+    }
+
+    @Override
     public void registrarPasoPorPuntoDeInteres(int userId, double coordenadaHorizontal, double coordenadaVertical)
             throws UsuarioNoExisteException, PuntoDeInteresNoExisteException {
         logger.info("Registrando paso por el punto de interés: Usuario ID = " + userId
@@ -102,36 +107,48 @@ public class Fachada implements IFachada {
         usuario.agregarPuntoVisitado(punto);
         logger.info("El usuario " + usuario.getNombre() + " ha pasado por el punto de interés " + punto.getNombre());
     }
-
+    //que puntos de interes ha visitado este usuario
     @Override
-    public List<String> consultarPuntosVisitados(int userId) {
+    public List<String> consultarPuntosVisitados(int userId) throws UsuarioNoExisteException {
         logger.info("Consultando puntos visitados por el usuario con ID: " + userId);
         List<String> puntosVisitadosInfo = new ArrayList<>();
         try {
+            // Buscar el usuario por su ID
             Usuario usuario = buscarUsuarioPorId(userId);
 
+            // Si el usuario no se encuentra, lanzar la excepción
             if (usuario == null) {
-                puntosVisitadosInfo.add("Error: Usuario con ID " + userId + " no encontrado.");
-                return puntosVisitadosInfo;
+                throw new UsuarioNoExisteException("El usuario con ID " + userId + " no existe.");
             }
 
+            // Consultar los puntos visitados
             List<PuntoDeInteres> puntosVisitados = usuario.consultarPuntosVisitados();
+
+            // Si el usuario no ha visitado puntos, agregar el mensaje correspondiente
             if (puntosVisitados.isEmpty()) {
                 puntosVisitadosInfo.add("El usuario " + usuario.getNombre() + " no ha visitado ningún punto de interés.");
             } else {
                 puntosVisitadosInfo.add("Puntos de interés visitados por " + usuario.getNombre() + ":");
+                // Recorrer los puntos visitados y agregar la información
                 for (PuntoDeInteres punto : puntosVisitados) {
                     puntosVisitadosInfo.add("- " + punto.getNombre() + " (Coordenadas: "
                             + punto.getCoordenadaHorizontal() + ", "
                             + punto.getCoordenadaVertical() + ")");
                 }
             }
+        } catch (UsuarioNoExisteException e) {
+            // Manejo específico del error cuando el usuario no existe
+            puntosVisitadosInfo.add("Error: " + e.getMessage());
+            logger.error("Error al consultar los puntos visitados: " + e.getMessage(), e);
         } catch (Exception e) {
+            // Manejo de otros errores generales
+            puntosVisitadosInfo.add("Error al consultar los puntos visitados.");
             logger.error("Error al consultar los puntos visitados por el usuario con ID " + userId, e);
         }
         return puntosVisitadosInfo;
     }
 
+    //Que usuarios han pasado por este punto de interes
     @Override
     public List<String> consultarUsuariosPorPuntoDeInteres(double coordenadaHorizontal, double coordenadaVertical) {
         logger.info("Consultando usuarios por el punto de interés en coordenadas: (" + coordenadaHorizontal + ", " + coordenadaVertical + ")");
@@ -193,8 +210,8 @@ public class Fachada implements IFachada {
         }
         return null;
     }
-
-    private PuntoDeInteres buscarPuntoPorCoordenadas(double coordenadaHorizontal, double coordenadaVertical) {
+    @Override
+    public PuntoDeInteres buscarPuntoPorCoordenadas(double coordenadaHorizontal, double coordenadaVertical) {
         for (PuntoDeInteres punto : puntosDeInteres) {
             if (punto.getCoordenadaHorizontal() == coordenadaHorizontal && punto.getCoordenadaVertical() == coordenadaVertical) {
                 return punto;

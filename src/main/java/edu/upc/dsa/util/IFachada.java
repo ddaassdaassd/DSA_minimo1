@@ -12,9 +12,11 @@ public interface IFachada {
             throws UsuarioNoExisteException, PuntoDeInteresNoExisteException;
     void registrarUsuario(Usuario usuario);
     List<Usuario> listarUsuariosAlfabeticamente(List<Usuario> usuarios);
-    List<String> consultarPuntosVisitados(int userId);
+    List<String> consultarPuntosVisitados(int userId) throws UsuarioNoExisteException;
     List<String> consultarUsuariosPorPuntoDeInteres(double coordenadaHorizontal, double coordenadaVertical);
     List<String> consultarPuntosPorTipo(PuntoDeInteres.ElementType tipo);
     List<Usuario> getUsuarios();
+    List<PuntoDeInteres> getPuntosDeInteres();
     Usuario consultarUsuarioPorId(List<Usuario> usuarios, int id) throws UsuarioNoEncontradoException;
+    PuntoDeInteres buscarPuntoPorCoordenadas(double coordenadaHorizontal, double coordenadaVertical);
 }
